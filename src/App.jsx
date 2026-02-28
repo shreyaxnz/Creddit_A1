@@ -58,6 +58,7 @@ function Home({ token }) {
   const [slug, setSlug] = useState("");
   const [error, setError] = useState("");
   const [posts, setPosts] = useState([]);
+  const [favVersion, setFavVersion] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -112,6 +113,21 @@ function Home({ token }) {
             <p>{p.content}</p>
             <p style={styles.meta}>
               <b>Author:</b> {p.author} | <b>Likes:</b> {p.totalLikes}
+              <button
+                onClick={() => {
+                  addFavId(p.id);
+                  setFavVersion((v) => v + 1);
+                }}
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 6,
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                {isFavId(p.id) ? "★ Favourited" : "☆ Add to favourites"}
+              </button>
             </p>
           </div>
         ))}

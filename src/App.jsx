@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { login } from "./api";
+import { getForums } from "./api";
 
 export default function App() {
   const [token, setToken] = useState("");
@@ -28,7 +29,46 @@ export default function App() {
       {authError && <p style={{ color: "crimson" }}>{authError}</p>}
       {!token && !authError && <p>Signing in...</p>}
 
-      {token && <p>Signed in ✅</p>}
+      {token && <Home token={token} />}
+    </div>
+  );
+}
+
+function Home({ token }) {
+  const [forums, setForums] = useState([]);
+  const [slug, setSlug] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setError("");
+        const f = await getForums(token);
+        setForums(f);
+      } catch (e) {
+        setError(e.message);
+      }
+    })();
+  }, [token]);
+
+  return (
+    <div style={{ marginTop: 20 }}>
+      <h3>Select a forum</h3>
+      {error && <p style={{ color: "crimson" }}>{error}</p>}
+
+      <select value={slug} onChange={(e) => setSlug(e.target.value)}>
+        <option value="">-- choose forum --</option>
+        {forums.map((f) => {
+          const s = f.slug || f.name;
+          return (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          );
+        })}
+      </select>
+
+      {slug && <p style={{ marginTop: 10 }}>Selected: {slug}</p>}
     </div>
   );
 }

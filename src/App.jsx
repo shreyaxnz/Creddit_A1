@@ -165,3 +165,38 @@ const styles = {
     fontWeight: 500,
   },
 };
+
+const FAV_KEY = "creddit_favs";
+
+function loadFavIds() {
+  try {
+    const raw = localStorage.getItem(FAV_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveFavIds(ids) {
+  localStorage.setItem(FAV_KEY, JSON.stringify(ids));
+}
+
+function addFavId(id) {
+  const ids = loadFavIds();
+  if (!ids.includes(id)) {
+    ids.push(id);
+    saveFavIds(ids);
+  }
+  return ids;
+}
+
+function removeFavId(id) {
+  const ids = loadFavIds().filter((x) => x !== id);
+  saveFavIds(ids);
+  return ids;
+}
+
+function isFavId(id) {
+  return loadFavIds().includes(id);
+}

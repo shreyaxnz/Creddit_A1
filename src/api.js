@@ -23,3 +23,12 @@ export async function getForums(token) {
   if (!res.ok) throw new Error("Failed to load forums");
   return res.json();
 }
+
+export async function getForumPosts(token, slug, limit = 10) {
+  const res = await fetch(`${BASE}/forums/${encodeURIComponent(slug)}?limit=${limit}`, {
+    headers: { accept: "application/json", Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) throw new Error("Failed to load posts");
+  return res.json();
+}

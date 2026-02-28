@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { login } from "./api";
 import { getForums } from "./api";
 import { getForumPosts } from "./api";
+import { getPostById } from "./api";
 
 export default function App() {
   const [token, setToken] = useState("");
@@ -48,7 +49,7 @@ export default function App() {
       {!token && !authError && <p>Signing in...</p>}
 
       {token && view === "home" && <Home token={token} />}
-      {token && view === "favs" && <Favs />}
+      {token && view === "favs" && <Favs token={token} />}
     </div>
   );
 }
@@ -84,7 +85,7 @@ function Home({ token }) {
   };
 
   return (
-    <div style={{ marginTop: 20 }}>
+    <div key={favVersion} style={{ marginTop: 20 }}>
       <h3>Select a forum</h3>
       {error && <p style={{ color: "crimson" }}>{error}</p>}
 
@@ -113,22 +114,22 @@ function Home({ token }) {
             <p>{p.content}</p>
             <p style={styles.meta}>
               <b>Author:</b> {p.author} | <b>Likes:</b> {p.totalLikes}
-              <button
-                onClick={() => {
-                  addFavId(p.id);
-                  setFavVersion((v) => v + 1);
-                }}
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: 6,
-                  border: "none",
-                  cursor: "pointer",
-                  fontWeight: 600,
-                }}
-              >
-                {isFavId(p.id) ? "★ Favourited" : "☆ Add to favourites"}
-              </button>
             </p>
+            <button
+              onClick={() => {
+                addFavId(p.id);
+                setFavVersion((v) => v + 1);
+              }}
+              style={{
+                padding: "6px 10px",
+                borderRadius: 6,
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              {isFavId(p.id) ? "★ Favourited" : "☆ Add to favourites"}
+            </button>
           </div>
         ))}
       </div>
@@ -136,38 +137,73 @@ function Home({ token }) {
   );
 }
 
-function Favs() {
+function Favs({ token }) {
   const [ids, setIds] = useState(loadFavIds());
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const refresh = () => setIds(loadFavIds());
+  useEffect(() => {
+    setIds(loadFavIds());
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setError("");
+        setLoading(true);
+
+        const favIds = loadFavIds();
+        setIds(favIds);
+
+        if (favIds.length === 0) {
+          setPosts([]);
+          return;
+        }
+
+        const results = await Promise.all(favIds.map((id) => getPostById(token, id)));
+        setPosts(results);
+      } catch (e) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [token, ids.length]);
+
+  const remove = (id) => {
+    removeFavId(id);
+    const newIds = loadFavIds();
+    setIds(newIds);
+    setPosts((prev) => prev.filter((p) => p.id !== id));
+  };
 
   return (
     <div style={{ marginTop: 20 }}>
       <h3>Your Favourites</h3>
       <p>Total favourites: {ids.length}</p>
 
-      <button onClick={refresh} style={{ marginBottom: 10 }}>
-        Refresh
-      </button>
+      {loading && <p>Loading favourites...</p>}
+      {error && <p style={{ color: "crimson" }}>{error}</p>}
 
       {ids.length === 0 ? (
         <p>No favourites yet.</p>
       ) : (
-        <ul>
-          {ids.map((id) => (
-            <li key={id} style={{ marginBottom: 6 }}>
-              {id}{" "}
-              <button
-                onClick={() => {
-                  removeFavId(id);
-                  setIds(loadFavIds());
-                }}
-              >
+        <div style={{ marginTop: 12 }}>
+          {posts.map((p) => (
+            <div key={p.id} style={styles.card}>
+              <h4 style={{ marginTop: 0 }}>{p.title}</h4>
+              <p>{p.content}</p>
+              <p style={styles.meta}>
+                <b>Author:</b> {p.author} | <b>Likes:</b> {p.totalLikes}
+              </p>
+
+              <button onClick={() => remove(p.id)} style={styles.removeBtn}>
                 Remove
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
@@ -207,6 +243,22 @@ const styles = {
     border: "none",
     cursor: "pointer",
     fontWeight: 500,
+  },
+  card: {
+    background: "white",
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 12,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+  },
+  meta: { opacity: 0.8 },
+  removeBtn: {
+    padding: "6px 10px",
+    borderRadius: 6,
+    border: "none",
+    cursor: "pointer",
+    background: "#ffe4e6",
+    fontWeight: 600,
   },
 };
 

@@ -32,3 +32,12 @@ export async function getForumPosts(token, slug, limit = 10) {
   if (!res.ok) throw new Error("Failed to load posts");
   return res.json();
 }
+
+export async function getPostById(token, id) {
+  const res = await fetch(`${BASE}/posts/${encodeURIComponent(id)}`, {
+    headers: { accept: "application/json", Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) throw new Error(`Failed to load post ${id}`);
+  return res.json();
+}

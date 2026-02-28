@@ -1,4 +1,21 @@
+import { useEffect, useState } from "react";
+import { login } from "./api";
+
 export default function App() {
+  const [token, setToken] = useState("");
+  const [authError, setAuthError] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const t = await login();
+        setToken(t);
+      } catch (e) {
+        setAuthError(e.message);
+      }
+    })();
+  }, []);
+
   return (
     <div style={styles.page}>
       <header style={styles.header}>
@@ -8,6 +25,10 @@ export default function App() {
         </div>
       </header>
 
+      {authError && <p style={{ color: "crimson" }}>{authError}</p>}
+      {!token && !authError && <p>Signing in...</p>}
+
+      {token && <p>Signed in ✅</p>}
     </div>
   );
 }
@@ -29,18 +50,6 @@ const styles = {
     color: "white",
     boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
   },
-  name: {
-    margin: 0,
-    fontSize: 22,
-    fontWeight: 600,
-  },
-  subtitle: {
-    margin: 0,
-    fontSize: 14,
-    opacity: 0.9,
-  },
-  content: {
-    marginTop: 30,
-    fontSize: 16,
-  },
+  name: { margin: 0, fontSize: 22, fontWeight: 600 },
+  subtitle: { margin: 0, fontSize: 14, opacity: 0.9 },
 };

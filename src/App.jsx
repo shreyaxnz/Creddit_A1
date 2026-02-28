@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { login } from "./api";
 import { getForums } from "./api";
+import { getForumPosts } from "./api";
 
 export default function App() {
   const [token, setToken] = useState("");
@@ -38,6 +39,7 @@ function Home({ token }) {
   const [forums, setForums] = useState([]);
   const [slug, setSlug] = useState("");
   const [error, setError] = useState("");
+  const [posts, setPosts] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -50,6 +52,17 @@ function Home({ token }) {
       }
     })();
   }, [token]);
+
+  const loadPosts = async () => {
+    if (!slug) return;
+    try {
+      setError("");
+      const p = await getForumPosts(token, slug, 10);
+      setPosts(p);
+    } catch (e) {
+      setError(e.message);
+    }
+  };
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -68,7 +81,23 @@ function Home({ token }) {
         })}
       </select>
 
+     <button onClick={loadPosts} style={styles.button}>
+        Load top 10 posts
+      </button>
+
       {slug && <p style={{ marginTop: 10 }}>Selected: {slug}</p>}
+
+      <div style={{ marginTop: 20 }}>
+        {posts.map((p) => (
+          <div key={p.id} style={styles.card}>
+            <h4 style={{ marginTop: 0 }}>{p.title}</h4>
+            <p>{p.content}</p>
+            <p style={styles.meta}>
+              <b>Author:</b> {p.author} | <b>Likes:</b> {p.totalLikes}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

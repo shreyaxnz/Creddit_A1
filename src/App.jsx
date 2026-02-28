@@ -137,10 +137,38 @@ function Home({ token }) {
 }
 
 function Favs() {
+  const [ids, setIds] = useState(loadFavIds());
+
+  const refresh = () => setIds(loadFavIds());
+
   return (
     <div style={{ marginTop: 20 }}>
       <h3>Your Favourites</h3>
-      <p>No favourites yet.</p>
+      <p>Total favourites: {ids.length}</p>
+
+      <button onClick={refresh} style={{ marginBottom: 10 }}>
+        Refresh
+      </button>
+
+      {ids.length === 0 ? (
+        <p>No favourites yet.</p>
+      ) : (
+        <ul>
+          {ids.map((id) => (
+            <li key={id} style={{ marginBottom: 6 }}>
+              {id}{" "}
+              <button
+                onClick={() => {
+                  removeFavId(id);
+                  setIds(loadFavIds());
+                }}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

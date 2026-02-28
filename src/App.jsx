@@ -6,6 +6,7 @@ import { getForumPosts } from "./api";
 export default function App() {
   const [token, setToken] = useState("");
   const [authError, setAuthError] = useState("");
+  const [view, setView] = useState("home"); 
 
   useEffect(() => {
     (async () => {
@@ -25,12 +26,29 @@ export default function App() {
           <h1 style={styles.name}>Shreya Vipulbhai Patel</h1>
           <p style={styles.subtitle}>Creddit Favourites App</p>
         </div>
+
+        <div>
+          <button
+            style={styles.navBtn}
+            onClick={() => setView("home")}
+          >
+            Home
+          </button>
+
+          <button
+            style={styles.navBtn}
+            onClick={() => setView("favs")}
+          >
+            Favourites
+          </button>
+        </div>
       </header>
 
       {authError && <p style={{ color: "crimson" }}>{authError}</p>}
       {!token && !authError && <p>Signing in...</p>}
 
-      {token && <Home token={token} />}
+      {token && view === "home" && <Home token={token} />}
+      {token && view === "favs" && <Favs />}
     </div>
   );
 }
@@ -102,6 +120,15 @@ function Home({ token }) {
   );
 }
 
+function Favs() {
+  return (
+    <div style={{ marginTop: 20 }}>
+      <h3>Your Favourites</h3>
+      <p>No favourites yet.</p>
+    </div>
+  );
+}
+
 const styles = {
   page: {
     minHeight: "100vh",
@@ -119,6 +146,22 @@ const styles = {
     color: "white",
     boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
   },
-  name: { margin: 0, fontSize: 22, fontWeight: 600 },
-  subtitle: { margin: 0, fontSize: 14, opacity: 0.9 },
+  name: { 
+    margin: 0, 
+    fontSize: 22, 
+    fontWeight: 600 
+  },
+  subtitle: { 
+    margin: 0, 
+    fontSize: 14, 
+    opacity: 0.9 
+  },
+  navBtn: {
+    marginLeft: 10,
+    padding: "6px 12px",
+    borderRadius: 6,
+    border: "none",
+    cursor: "pointer",
+    fontWeight: 500,
+  },
 };

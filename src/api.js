@@ -14,3 +14,12 @@ export async function login() {
   const data = await res.json();
   return data.access_token;
 }
+
+export async function getForums(token) {
+  const res = await fetch(`${BASE}/forums`, {
+    headers: { accept: "application/json", Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) throw new Error("Failed to load forums");
+  return res.json();
+}
